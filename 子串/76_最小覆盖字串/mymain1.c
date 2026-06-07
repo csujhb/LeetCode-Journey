@@ -67,7 +67,7 @@ char *minWindow(char *s, char *t)
 //         return res;
 //     }
 
-//     int s_table[128] = {0};  // 修正数组大小
+//     int s_table[128] = {0};
 //     int t_table[128] = {0};
 //     int required = 0;
 
