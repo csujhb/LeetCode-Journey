@@ -116,7 +116,7 @@ int findMax(int* nums, int numsSize) {
 
 ### 危险的动态锚点 (`nums[left]`)
 
-* **原因**：在找最大值时，如果使用 `nums[mid] >= nums[left]`，由于 `left` 会不断向右攀爬爬上“大数山”，这个参照基准会不断变大，导致布尔映射关系被破坏。这会极大增加边界推理的认知负担，极易写出死循环（Bug）。
+* **原因**：在找最大值时，如果使用 `nums[mid] >= nums[left]`，由于 `left` 会不断向右攀爬爬上“大数山”，这个参照基准会不断变大，导致布尔映射关系被破坏。这会极大增加边界推理的认知负担，极易写出死循环（Bug）。`nums[left]` 作为动态锚点并非错误，但推理复杂；如果有重复值，必须单独处理 `nums[mid] == nums[left]`，否则容易死循环或误判。
 
 我已经为你把这部分最核心的“进阶指南”整理成标准格式，你可以直接把它**追加到上一份学习笔记的末尾**。这部分内容是整套算法的最精华所在，绝对是面试中的大杀器。
 
@@ -141,7 +141,7 @@ int findMax(int* nums, int numsSize) {
 **目标：处理 `[3, 3, 1, 3]` 这种首尾相等导致二分“失明”的极端情况。**
 
 * ✅ **`nums[right]`（唯一解法）**：当 `nums[mid] == nums[right]` 时，我们无法判定方向，但可以安全地执行 `right--`（扔掉边缘的重复项）来打破僵局，因为 `mid` 是该值的完美替身。
-* ❌ **`nums[n-1] / nums[0]`（彻底失效）**：静态锚点是固定的死值，无法执行收缩操作，遇到上述情况必定陷入死循环。
+* ❌ **`nums[n-1] / nums[0]`）**：单纯依赖固定锚点 `nums[0]` 或 `nums[n-1]`，无法处理重复值造成的等值歧义；如果不额外做去重或边界收缩，算法会失效。
 * ❌ **`nums[left]`（逻辑破坏）**：同场景 1。
 
 ### 场景 3：寻找最大值（无重复值）
@@ -156,7 +156,7 @@ int findMax(int* nums, int numsSize) {
 
 **目标：应对重复元素导致的判定失效（与场景 2 完全对称）。**
 
-* ✅ **`nums[left]`（唯一解法）**：当遇到 `nums[mid] == nums[left]` 无法判定时，可以安全地执行 `left++` 来保守缩小区间（寻找右边界时 `mid` 靠右取整，跳过 `left` 不会丢失替身）。
+* ✅ **`nums[left]`（推荐解法）**：当遇到 `nums[mid] == nums[left]` 无法判定时，可以安全地执行 `left++` 来保守缩小区间（寻找右边界时 `mid` 靠右取整，跳过 `left` 不会丢失替身）。也可以先找最小值，再根据旋转边界找最大值；或者也可以用其他变体写法
 * ❌ **`nums[0] / nums[n-1]`（彻底失效）**：固定锚点无法执行 `left++` 操作，卡死。
 * ❌ **`nums[right]`（逻辑破坏）**：同场景 3。
 
@@ -168,3 +168,31 @@ int findMax(int* nums, int numsSize) {
 
 * **没有重复值时：** 你想怎么秀理解都可以，静态标尺、动态标尺都能完美解题。
 * **有重复值时：** 必须放弃静态锚点（`0` 和 `n-1`）。找最小值用 `nums[right]` 配合 `right--`；找最大值用 `nums[left]` 配合 `left++`。
+* 允许重复值后，最坏时间复杂度会退化为 `O(n)`，平均情况下仍接近 `O(log n)`
+* 有重复值找最大：
+  int findMax(int* nums, int numsSize)
+  {
+      int left = 0;
+      int right = numsSize - 1;
+
+      while (left < right)
+      {
+          int mid = left + (right - left + 1) / 2;
+      
+          if (nums[mid] > nums[left])
+          {
+              left = mid;
+          }
+          else if (nums[mid] < nums[left])
+          {
+              right = mid - 1;
+          }
+          else
+          {
+              left++;
+          }
+      }
+      
+      return nums[left];
+  }
+
